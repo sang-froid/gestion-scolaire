@@ -1,18 +1,3 @@
-{{--
-|==========================================================================
-| resources/views/layouts/_topbar.blade.php
-|==========================================================================
-| Rôle : Barre de navigation du haut, commune à toutes les pages.
-|         Affiche le titre de page, la cloche et le menu utilisateur.
-|
-| Inclus dans app.blade.php via @include('layouts._topbar')
-|
-| Données utilisées :
-|   @yield('page_title')    → titre défini dans chaque vue enfant
-|   @yield('page_subtitle') → sous-titre défini dans chaque vue enfant
-|   auth()->user()          → utilisateur connecté
-|==========================================================================
---}}
 
 <div class="topbar">
 

@@ -14,7 +14,7 @@ Route::get('/', function () {
 
 Route::get('/login',  [AuthController::class, 'showForm'])->name('login');
 Route::post('/login', [AuthController::class, 'authenticate'])->name('login.post');
-Route::post('/logout', [AuthController::class, 'authenticate'])->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
 Route::get('/inscription',       [InscriptionController::class, 'showRegister'])->name('parent.inscription.create');

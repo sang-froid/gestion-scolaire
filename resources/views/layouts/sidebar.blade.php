@@ -1,24 +1,12 @@
-{{--
-|==========================================================================
-| resources/views/layouts/_sidebar.blade.php
-|==========================================================================
-| Rôle : Sidebar UNIQUE. Le menu change selon auth()->user()->role.
-|         'admin'  → menu administration complet
-|         'parent' → menu espace parent
-|
-| Inclus dans app.blade.php via @include('layouts._sidebar')
-| Aucune variable à passer : tout vient de auth()->user()
-|==========================================================================
---}}
 
 <aside class="sidebar">
 
   {{-- ══ LOGO ══ --}}
-  <div class="sidebar-logo">
+<div class="sidebar-logo" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
     <div class="logo-mark">
       <i class="bi bi-mortarboard-fill"></i>
     </div>
-    <div class="school-name">École Les Hirondelles</div>
+    <div class="school-name">Gestion Scolaire</div>
     <div class="school-role">
       {{-- Label selon le rôle --}}
       @if(auth()->user()->role === 'admin')
@@ -114,23 +102,6 @@
         $mesEleves = auth()->user()->parentModel?->eleves ?? collect();
       @endphp
 
-      @if($mesEleves->isNotEmpty())
-        <p class="nav-section-label">Mes enfants</p>
-        @foreach($mesEleves as $eleve)
-          <a href="{{ route('parent.inscription.show', $eleve->inscription->id ?? 0) }}"
-             class="nav-item nav-item-child
-                    {{ request()->is('parent/inscription/'.($eleve->inscription->id ?? '')) ? 'active' : '' }}">
-            <i class="bi bi-person-circle"></i>
-            {{ $eleve->prenom }} {{ Str::upper(Str::limit($eleve->nom, 1, '')) }}.
-            {{-- Badge statut --}}
-            @if($eleve->inscription?->statut === 'en_attente')
-              <span class="nav-badge" style="background:var(--gold)">!</span>
-            @elseif($eleve->inscription?->statut === 'validee')
-              <i class="bi bi-check-circle-fill ms-auto" style="color:var(--mint);font-size:.75rem"></i>
-            @endif
-          </a>
-        @endforeach
-      @endif
 
       <p class="nav-section-label">Informations</p>
 
