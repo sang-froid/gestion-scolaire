@@ -8,15 +8,11 @@
 </head>
 <body class="bg-light">
 
-    <div class="container">
+    <div class="container-fluid">
         <div class="row justify-content-center align-items-center min-vh-100">
-            <div class="col-md-5">
+            <div class="col-md-12">
 
-                {{-- Logo / Titre --}}
-                <div class="text-center mb-4">
-                    <h3 class="fw-bold" style="color: #1e4d8c;">🏫 Gestion Scolaire</h3>
-                    <p class="text-muted">Plateforme de gestion des établissements</p>
-                </div>
+             
 
                 {{-- Carte centrale --}}
                 <div class="card shadow-sm">

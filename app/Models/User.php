@@ -10,40 +10,35 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    protected $fillable = ['name', 'email', 'password', 'role', 'actif'];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = ['actif' => 'boolean'];
+
+    // ── Helpers rôle ──────────────────────────────────────
+    public function isAdmin(): bool
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->role === 'admin';
+    }
+
+    public function isParent(): bool
+    {
+        return $this->role === 'parent';
+    }
+
+    // ── Relations ─────────────────────────────────────────
+
+    /**
+     * Le profil parent lié à ce compte utilisateur.
+     * Utilisé dans le sidebar et les controllers parent.
+     * Appelé avec : auth()->user()->parentModel
+     * (on évite "parent" qui est un mot réservé PHP)
+     */
+    public function parentModel()
+    {
+        return $this->hasOne(ParentModel::class, 'user_id');
     }
 }
