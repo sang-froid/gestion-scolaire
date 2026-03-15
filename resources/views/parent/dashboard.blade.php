@@ -402,7 +402,7 @@
     @endif
 
     {{-- ── ALERTE SUCCÈS ── --}}
-    @if (session('success'))
+    {{-- @if (session('success'))
         <div class="alert alert-dismissible mb-3 d-flex align-items-center gap-2"
             style="background:rgba(16,185,129,.1);border-left:4px solid #10B981;
               border-radius:10px;padding:.85rem 1.1rem;color:#065F46;border:1px solid rgba(16,185,129,.2)">
@@ -410,7 +410,7 @@
             {{ session('success') }}
             <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
         </div>
-    @endif
+    @endif --}}
 
     {{-- ── WELCOME BANNER ── --}}
     <div class="welcome-banner anim-up">
@@ -483,7 +483,7 @@
         {{-- GAUCHE : mes enfants --}}
         <div class="col-lg-7">
             <div class="section-head">
-                <h5><i class="bi bi-backpack2-fill"></i> Mes enfants</h5>
+                <h5><i class="bi bi-backpack2-fill"></i> Mes inscrits</h5>
                
             </div>
 
