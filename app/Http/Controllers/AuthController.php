@@ -6,12 +6,13 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+
 class AuthController extends Controller
 {
     //
 
 
-     // afficher la page login
+    // afficher la page login
     public function showLogin()
     {
         return view('auth.login');
@@ -25,10 +26,7 @@ class AuthController extends Controller
     }
 
     // afficher la page register
-    public function showRegister()
-    {
-        return view('auth.register');
-    }
+  
 
     // traiter l'inscription
     public function register(Request $request)
@@ -38,7 +36,7 @@ class AuthController extends Controller
     }
 
 
-     // ── GET /login ────────────────────────────────────────────
+    // ── GET /login ────────────────────────────────────────────
     public function showForm()
     {
         // Si déjà connecté → rediriger directement
@@ -109,11 +107,11 @@ class AuthController extends Controller
     // ── Redirection selon le rôle ─────────────────────────────
     private function redirectSelonRole($user)
     {
-        return match($user->role) {
+        return match ($user->role) {
             'admin'  => redirect()->route('admin.dashboard')
-                                  ->with('success', 'Bienvenue, ' . $user->name . ' !'),
+                ->with('success', 'Bienvenue, ' . $user->name . ' !'),
             'parent' => redirect()->route('parent.dashboard')
-                                  ->with('success', 'Bienvenue, ' . $user->name . ' !'),
+                ->with('success', 'Bienvenue, ' . $user->name . ' !'),
             default  => redirect('/'),
         };
     }

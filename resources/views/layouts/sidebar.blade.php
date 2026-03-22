@@ -89,8 +89,8 @@
                 Tableau de bord
             </a>
 
-            <a href="{{ route('parent.inscription.create') }}"
-                class="nav-item {{ request()->routeIs('parent.inscription.create') ? 'active' : '' }}">
+            <a href="{{ route('parent.list') }}"
+                class="nav-item {{ request()->routeIs('parent.inscriptions.list') ? 'active' : '' }}">
                 <i class="bi bi-card-list"></i>
                 Mes inscriptions
             </a>
@@ -104,7 +104,7 @@
             <p class="nav-section-label">Informations</p>
 
             <a href="{{ route('parent.notifications.index') }}"
-                class="nav-item {{ request()->routeIs('parent.notifications.*') ? 'active' : '' }}">
+                class="nav-item {{ request()->routeIs('parent.notifications.index.*') ? 'active' : '' }}">
                 <i class="bi bi-bell"></i>
                 Mes notifications
                 {{-- Badge : non lues --}}

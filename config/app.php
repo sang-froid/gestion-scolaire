@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'annee_scolaire' => env('ANNEE_SCOLAIRE', '2025-2026'),
+
 ];

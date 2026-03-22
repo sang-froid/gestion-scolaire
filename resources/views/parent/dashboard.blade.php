@@ -6,8 +6,9 @@
 @push('styles')
     <style>
         * {
-  font-family: 'Montserrat', sans-serif !important;
-}
+            font-family: 'Montserrat', sans-serif !important;
+        }
+
         .welcome-banner {
             background: linear-gradient(115deg, #0D1B2A 0%, #1A3A5C 55%, #1e4d7e 100%);
             border-radius: 14px;
@@ -50,7 +51,7 @@
         }
 
         .welcome-date .day {
-           
+
             font-size: 2.8rem;
             color: #fff;
             line-height: 1;
@@ -93,7 +94,7 @@
         }
 
         .stat-val {
-           
+
             font-size: 1.85rem;
             color: #0D1B2A;
             line-height: 1;
@@ -226,7 +227,7 @@
         }
 
         .echeance-amount {
-           
+
             font-size: 1.65rem;
             margin: .2rem 0;
         }
@@ -480,178 +481,160 @@
     {{-- ── LIGNE PRINCIPALE ── --}}
     <div class="row g-4">
 
-        {{-- GAUCHE : mes enfants --}}
-        <div class="col-lg-7">
-            <div class="section-head">
-                <h5><i class="bi bi-backpack2-fill"></i> Mes inscrits</h5>
-               
-            </div>
+    <div class="col-12">
+        <div class="section-head">
+            <h5><i class="bi bi-backpack2-fill"></i> Mes inscrits</h5>
+        </div>
+
+        {{-- GRID DES CARTES --}}
+        <div class="row g-4">
 
             @forelse($eleves as $eleve)
-                @php $statut = $eleve->inscription?->statut ?? 'en_attente'; @endphp
-                <div class="eleve-card anim-up">
-                    <div class="eleve-head">
-                        <div class="eleve-avatar">
-                            @if ($eleve->photo)
-                                <img src="{{ asset('storage/' . $eleve->photo) }}" alt="Photo" />
-                            @else
-                                <i class="bi bi-person-fill"></i>
-                            @endif
-                        </div>
-                        <div class="flex-1">
-                            <div class="eleve-nom">{{ $eleve->prenom }} {{ $eleve->nom }}</div>
-                            <div class="eleve-classe">
-                                {{ $eleve->inscription?->classe?->nom ?? 'Classe non attribuée' }}
-                                — {{ $eleve->inscription?->annee_scolaire ?? config('app.annee_scolaire', '2025-2026') }}
+                @php 
+                    $statut = $eleve->inscription?->statut ?? 'en_attente'; 
+                @endphp
+
+                {{-- ✅ 3 PAR LIGNE --}}
+                <div class="col-md-6 col-lg-4">
+                    <div class="eleve-card anim-up h-100 d-flex flex-column">
+
+                        {{-- HEADER --}}
+                        <div class="eleve-head">
+                            <div class="eleve-avatar">
+                                @if ($eleve->photo)
+                                    <img src="{{ asset('storage/' . $eleve->photo) }}" alt="Photo" />
+                                @else
+                                    <i class="bi bi-person-fill"></i>
+                                @endif
+                            </div>
+
+                            <div class="flex-1">
+                                <div class="eleve-nom">
+                                    {{ $eleve->prenom }} {{ $eleve->nom }}
+                                </div>
+                                <div class="eleve-classe">
+                                    {{ $eleve->inscription?->classe?->nom ?? 'Classe non attribuée' }}
+                                    — {{ $eleve->inscription?->annee_scolaire ?? config('app.annee_scolaire', '2025-2026') }}
+                                </div>
+                            </div>
+
+                            <div class="ms-auto">
+                                @if ($statut === 'validee')
+                                    <span class="badge-gu badge-validee">
+                                        <i class="bi bi-check2-circle"></i> Validée
+                                    </span>
+                                @elseif($statut === 'en_attente')
+                                    <span class="badge-gu badge-attente">
+                                        <i class="bi bi-hourglass-split"></i> En attente
+                                    </span>
+                                @else
+                                    <span class="badge-gu badge-refusee">
+                                        <i class="bi bi-x-circle"></i> Refusée
+                                    </span>
+                                @endif
                             </div>
                         </div>
-                        <div class="ms-auto">
+
+                        {{-- BODY --}}
+                        <div class="eleve-body flex-grow-1">
+
+                            <div class="eleve-row">
+                                <span class="k">
+                                    <i class="bi bi-calendar3 me-1"></i>Date de naissance
+                                </span>
+                                <span class="v">
+                                    {{ \Carbon\Carbon::parse($eleve->date_naissance)->isoFormat('D MMMM YYYY') }}
+                                </span>
+                            </div>
+
+                            <div class="eleve-row">
+                                <span class="k">
+                                    <i class="bi bi-layers me-1"></i>Niveau
+                                </span>
+                                <span class="v">
+                                    {{ $eleve->inscription?->classe?->niveau ?? ($eleve->niveau_souhaite ?? '—') }}
+                                </span>
+                            </div>
+
+                            <div class="eleve-row">
+                                <span class="k">
+                                    <i class="bi bi-folder me-1"></i>N° dossier
+                                </span>
+                                <span class="v">
+                                    {{ $eleve->inscription?->numero_dossier ?? '—' }}
+                                </span>
+                            </div>
+
+                            <div class="eleve-row">
+                                <span class="k">
+                                    <i class="bi bi-clock-history me-1"></i>Soumis le
+                                </span>
+                                <span class="v">
+                                    {{ $eleve->inscription?->created_at?->isoFormat('D MMM YYYY') ?? '—' }}
+                                </span>
+                            </div>
+
+                        </div>
+
+                        {{-- FOOTER --}}
+                        <div class="eleve-foot mt-auto">
+
+                            <a href="{{ route('parent.inscription.show', $eleve->inscription->id ?? 0) }}"
+                               class="btn-primary-gu"
+                               style="padding:.42rem .9rem;font-size:.8rem">
+                                <i class="bi bi-eye"></i> Voir le dossier
+                            </a>
+
                             @if ($statut === 'validee')
-                                <span class="badge-gu badge-validee"><i class="bi bi-check2-circle"></i> Validée</span>
+                                <a href="{{ route('parent.inscription.show', $eleve->inscription->id) }}?dl=fiche"
+                                   class="btn-outline-gu"
+                                   style="padding:.42rem .9rem;font-size:.8rem">
+                                    <i class="bi bi-download"></i> Fiche PDF
+                                </a>
+
+                                <a href="{{ route('parent.inscription.show', $eleve->inscription->id) }}?dl=carte"
+                                   class="btn-outline-gu"
+                                   style="padding:.42rem .9rem;font-size:.8rem">
+                                    <i class="bi bi-credit-card-2-front"></i> Carte
+                                </a>
+
                             @elseif($statut === 'en_attente')
-                                <span class="badge-gu badge-attente"><i class="bi bi-hourglass-split"></i> En attente</span>
+                                <span class="btn-outline-gu"
+                                      style="padding:.42rem .9rem;font-size:.8rem;
+                                             border-color:#F59E0B;color:#B45309;cursor:default">
+                                    <i class="bi bi-hourglass-split"></i> En attente
+                                </span>
                             @else
-                                <span class="badge-gu badge-refusee"><i class="bi bi-x-circle"></i> Refusée</span>
+                                <span class="btn-outline-gu"
+                                      style="padding:.42rem .9rem;font-size:.8rem;
+                                             border-color:#F43F5E;color:#9F1239;cursor:default">
+                                    <i class="bi bi-x-circle"></i> Dossier refusé
+                                </span>
                             @endif
-                        </div>
-                    </div>
 
-                    <div class="eleve-body">
-                        <div class="eleve-row">
-                            <span class="k"><i class="bi bi-calendar3 me-1"></i>Date de naissance</span>
-                            <span
-                                class="v">{{ \Carbon\Carbon::parse($eleve->date_naissance)->isoFormat('D MMMM YYYY') }}</span>
                         </div>
-                        <div class="eleve-row">
-                            <span class="k"><i class="bi bi-layers me-1"></i>Niveau</span>
-                            <span
-                                class="v">{{ $eleve->inscription?->classe?->niveau ?? ($eleve->niveau_souhaite ?? '—') }}</span>
-                        </div>
-                        <div class="eleve-row">
-                            <span class="k"><i class="bi bi-folder me-1"></i>N° dossier</span>
-                            <span class="v" >
-                                {{ $eleve->inscription?->numero_dossier ?? '—' }}
-                            </span>
-                        </div>
-                        <div class="eleve-row">
-                            <span class="k"><i class="bi bi-clock-history me-1"></i>Soumis le</span>
-                            <span
-                                class="v">{{ $eleve->inscription?->created_at?->isoFormat('D MMM YYYY') ?? '—' }}</span>
-                        </div>
-                    </div>
 
-                    <div class="eleve-foot">
-                        <a href="{{ route('parent.inscription.show', $eleve->inscription->id ?? 0) }}"
-                            class="btn-primary-gu" style="padding:.42rem .9rem;font-size:.8rem">
-                            <i class="bi bi-eye"></i> Voir le dossier
-                        </a>
-                        @if ($statut === 'validee')
-                            <a href="{{ route('parent.inscription.show', $eleve->inscription->id) }}?dl=fiche"
-                                class="btn-outline-gu" style="padding:.42rem .9rem;font-size:.8rem">
-                                <i class="bi bi-download"></i> Fiche PDF
-                            </a>
-                            <a href="{{ route('parent.inscription.show', $eleve->inscription->id) }}?dl=carte"
-                                class="btn-outline-gu" style="padding:.42rem .9rem;font-size:.8rem">
-                                <i class="bi bi-credit-card-2-front"></i> Carte
-                            </a>
-                        @elseif($statut === 'en_attente')
-                            <span class="btn-outline-gu"
-                                style="padding:.42rem .9rem;font-size:.8rem;
-                         border-color:#F59E0B;color:#B45309;cursor:default">
-                                <i class="bi bi-hourglass-split"></i> Vérification en cours
-                            </span>
-                        @else
-                            <span class="btn-outline-gu"
-                                style="padding:.42rem .9rem;font-size:.8rem;
-                         border-color:#F43F5E;color:#9F1239;cursor:default">
-                                <i class="bi bi-x-circle"></i> Dossier refusé
-                            </span>
-                        @endif
                     </div>
                 </div>
 
             @empty
-                <div class="card-gu">
-                    <div class="empty-state">
-                        <i class="bi bi-backpack2"></i>
-                        <p>Aucun enfant inscrit pour le moment.</p>
-                        <a href="{{ route('parent.inscription.create') }}" class="btn-primary-gu mt-3">
-                            <i class="bi bi-plus-circle"></i> Inscrire mon enfant
-                        </a>
+                <div class="col-12">
+                    <div class="card-gu">
+                        <div class="empty-state text-center">
+                            <i class="bi bi-backpack2"></i>
+                            <p>Aucun enfant inscrit pour le moment.</p>
+
+                            <a href="{{ route('parent.inscription.create') }}" class="btn-primary-gu mt-3">
+                                <i class="bi bi-plus-circle"></i> Inscrire mon enfant
+                            </a>
+                        </div>
                     </div>
                 </div>
             @endforelse
-        </div>
-
-        {{-- DROITE --}}
-        <div class="col-lg-5">
-
-            {{-- Échéance --}}
-            @if ($prochaine_echeance)
-                <div class="echeance-card anim-up">
-                    <h6><i class="bi bi-wallet2 me-1"></i> Prochaine échéance</h6>
-                    <div class="echeance-amount">
-                        {{ number_format($prochaine_echeance->montant, 0, ',', ' ') }} FCFA
-                    </div>
-                    <div class="echeance-sublabel">
-                        {{ $prochaine_echeance->libelle }} — {{ $prochaine_echeance->eleve->prenom ?? '' }}
-                    </div>
-                    <div class="echeance-date">
-                        <i class="bi bi-calendar-event"></i>
-                        Avant le {{ \Carbon\Carbon::parse($prochaine_echeance->date_limite)->isoFormat('D MMMM YYYY') }}
-                    </div>
-                </div>
-            @endif
-
-            {{-- Actions rapides --}}
-            
-            @php $hasValidated = $eleves->contains(fn($e) => $e->inscription?->statut === 'validee'); @endphp
-        
-
-            {{-- Notifications --}}
-            <div class="section-head">
-                <h5><i class="bi bi-bell-fill"></i> Notifications récentes</h5>
-                <a href="{{ route('parent.notifications.index') }}" class="link-sm">
-                    Tout voir <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-
-            <div class="notif-list">
-                @forelse($notifications as $notif)
-                    <div class="notif-item {{ is_null($notif->lu_le) ? 'unread' : '' }}" data-id="{{ $notif->id }}">
-                        <div
-                            class="notif-icon
-            @if ($notif->type === 'paiement') ni-pay
-            @elseif($notif->type === 'urgente') ni-alert
-            @else ni-info @endif">
-                            <i
-                                class="bi
-              @if ($notif->type === 'paiement') bi-wallet2
-              @elseif($notif->type === 'urgente') bi-exclamation-triangle-fill
-              @else bi-info-circle-fill @endif">
-                            </i>
-                        </div>
-                        <div class="flex-1">
-                            <div class="notif-title">{{ $notif->sujet }}</div>
-                            <div class="notif-body">{{ Str::limit($notif->message, 80) }}</div>
-                            <div class="notif-time">
-                                <i class="bi bi-clock me-1"></i>{{ $notif->created_at->diffForHumans() }}
-                            </div>
-                        </div>
-                        @if (is_null($notif->lu_le))
-                            <div class="unread-dot"></div>
-                        @endif
-                    </div>
-                @empty
-                    <div class="empty-state">
-                        <i class="bi bi-bell-slash"></i>
-                        <p>Aucune notification pour le moment.</p>
-                    </div>
-                @endforelse
-            </div>
 
         </div>
     </div>
+</div>
 
 @endsection
 

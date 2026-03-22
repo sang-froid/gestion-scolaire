@@ -53,36 +53,67 @@ class InscriptionController extends Controller
             'prochaine_echeance'
         ));
     }
-    public function showRegister()
+   public function showRegister()
     {
-        return view('auth.register');
+
+        // Si connecté → on passe les infos parent déjà en BDD
+        $parentExistant = null;
+        if (Auth::check()) {
+            $parentExistant = Auth::user()->parentModel;
+        }
+        return view('auth.register', compact('parentExistant'));
     }
 
+  
+   
+
+      public function indexParentDossier()
+    {
+        $parent = Auth::user()->parentModel;
+
+        $eleves = Eleve::with([
+                'inscriptions',
+                'inscriptions.classe',
+                'inscription',          // année en cours
+                'inscription.classe',
+            ])
+            ->where('parent_id', $parent->id)
+            ->orderBy('prenom')
+            ->get();
+
+        return view('parent.mes_inscrit', compact('parent', 'eleves'));
+    }
 
     // ──────────────────────────────────────────────────────────
     // POST /parent/inscription
     // Traitement complet du formulaire
     // ──────────────────────────────────────────────────────────
-    public function store(Request $request)
+       public function store(Request $request)
     {
-        // ── 1. VALIDATION ─────────────────────────────────────
+        Log::info('[INSCRIPTION] store() — connecté=' . (Auth::check() ? 'oui' : 'non'));
 
-        Log::info("rentre");
-        $request->validate([
-            // Infos parent
-            'civilite'              => ['nullable', 'in:M.,Mme,Dr'],
-            'parent_nom'            => ['required', 'string', 'max:100'],
-            'parent_prenom'         => ['required', 'string', 'max:100'],
-            'parent_email'          => ['required', 'email', 'max:200'],
-            'parent_telephone'      => ['required', 'string', 'max:20'],
-            'parent_telephone2'     => ['nullable', 'string', 'max:20'],
-            'lien_parente'          => ['required', 'in:Père,Mère,Tuteur légal,Grand-parent,Autre'],
-            'parent_adresse'        => ['required', 'string', 'max:255'],
-            'parent_ville'          => ['required', 'string', 'max:100'],
-            'parent_arrondissement' => ['nullable', 'string', 'max:100'],
-            'parent_code_postal'    => ['nullable', 'string', 'max:20'],
+        $estConnecte = Auth::check();
 
-            // Infos élève
+        // ── RÈGLES DE VALIDATION ──────────────────────────────
+        // Les infos parent sont obligatoires SEULEMENT si non connecté
+        $reglesParent = $estConnecte
+            ? [] // connecté → on ignore les champs parent du formulaire
+            : [
+                'civilite'              => ['nullable', 'in:M.,Mme,Dr'],
+                'parent_nom'            => ['required', 'string', 'max:100'],
+                'parent_prenom'         => ['required', 'string', 'max:100'],
+                'parent_email'          => ['required', 'email', 'max:200'],
+                'parent_telephone'      => ['required', 'string', 'max:20'],
+                'parent_telephone2'     => ['nullable', 'string', 'max:20'],
+                'lien_parente'          => ['required', 'string', 'max:50'],
+                'parent_adresse'        => ['required', 'string', 'max:255'],
+                'parent_ville'          => ['required', 'string', 'max:100'],
+                'parent_arrondissement' => ['nullable', 'string', 'max:100'],
+                'parent_code_postal'    => ['nullable', 'string', 'max:20'],
+            ];
+
+        $request->validate(array_merge($reglesParent, [
+            // Élève — toujours obligatoire
             'eleve_nom'             => ['required', 'string', 'max:100'],
             'eleve_prenom'          => ['required', 'string', 'max:100'],
             'eleve_date_naissance'  => ['required', 'date', 'before:today'],
@@ -93,103 +124,100 @@ class InscriptionController extends Controller
             'niveau_souhaite'       => ['required', 'string', 'max:100'],
             'ancienne_ecole'        => ['nullable', 'string', 'max:200'],
             'derniere_classe'       => ['nullable', 'string', 'max:50'],
-            'resultat_precedent'    => ['nullable', 'in:Admis(e),Ajourné(e),1ère scolarisation'],
-            'groupe_sanguin'        => ['nullable', 'in:A+,A-,B+,B-,O+,O-,AB+,AB-'],
+            'resultat_precedent'    => ['nullable', 'string', 'max:50'],
+            'groupe_sanguin'        => ['nullable', 'string', 'max:5'],
             'infos_medicales'       => ['nullable', 'string', 'max:1000'],
+            'eleve_photo'           => ['nullable', 'image', 'max:2048'],
 
-            // Photo élève (optionnelle)
-            'eleve_photo'           => ['nullable', 'image', 'max:2048'], // 2 Mo
+            // Documents — obligatoires seulement si non connecté
+            'doc_acte_naissance'  => [$estConnecte ? 'nullable' : 'required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'doc_bulletin'        => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'doc_certificat_med'  => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'doc_piece_identite'  => [$estConnecte ? 'nullable' : 'required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'doc_photo_identite'  => [$estConnecte ? 'nullable' : 'required', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
 
-            // Documents
-            'doc_acte_naissance'    => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'doc_bulletin'          => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'doc_certificat_med'    => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'doc_piece_identite'    => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'doc_photo_identite'    => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
-
-            // Conditions
-            'conditions'            => ['required', 'accepted'],
-        ], [
-            // Messages personnalisés
-            'parent_nom.required'          => 'Le nom du parent est obligatoire.',
-            'parent_prenom.required'       => 'Le prénom du parent est obligatoire.',
-            'parent_email.required'        => "L'adresse e-mail est obligatoire.",
-            'parent_email.email'           => "L'adresse e-mail n'est pas valide.",
-            'parent_telephone.required'    => 'Le téléphone est obligatoire.',
-            'lien_parente.required'        => 'Le lien de parenté est obligatoire.',
-            'parent_adresse.required'      => "L'adresse est obligatoire.",
-            'parent_ville.required'        => 'La ville est obligatoire.',
-            'eleve_nom.required'           => "Le nom de l'élève est obligatoire.",
-            'eleve_prenom.required'        => "Le prénom de l'élève est obligatoire.",
+            'conditions' => ['required', 'accepted'],
+        ]), [
+            'parent_nom.required'           => 'Le nom du parent est obligatoire.',
+            'parent_prenom.required'        => 'Le prénom du parent est obligatoire.',
+            'parent_email.required'         => "L'adresse e-mail est obligatoire.",
+            'parent_email.email'            => "L'adresse e-mail n'est pas valide.",
+            'parent_telephone.required'     => 'Le téléphone est obligatoire.',
+            'lien_parente.required'         => 'Le lien de parenté est obligatoire.',
+            'parent_adresse.required'       => "L'adresse est obligatoire.",
+            'parent_ville.required'         => 'La ville est obligatoire.',
+            'eleve_nom.required'            => "Le nom de l'élève est obligatoire.",
+            'eleve_prenom.required'         => "Le prénom de l'élève est obligatoire.",
             'eleve_date_naissance.required' => 'La date de naissance est obligatoire.',
-            'eleve_date_naissance.before'  => 'La date de naissance doit être dans le passé.',
+            'eleve_date_naissance.before'   => 'La date de naissance doit être dans le passé.',
             'eleve_lieu_naissance.required' => 'Le lieu de naissance est obligatoire.',
-            'eleve_sexe.required'          => 'Le sexe est obligatoire.',
-            'niveau_souhaite.required'     => 'Le niveau souhaité est obligatoire.',
-            'doc_acte_naissance.required'  => "L'extrait d'acte de naissance est obligatoire.",
-            'doc_piece_identite.required'  => "La pièce d'identité du parent est obligatoire.",
-            'doc_photo_identite.required'  => "La photo d'identité de l'élève est obligatoire.",
-            'conditions.accepted'          => 'Vous devez accepter les conditions.',
+            'eleve_sexe.required'           => 'Le sexe est obligatoire.',
+            'niveau_souhaite.required'      => 'Le niveau souhaité est obligatoire.',
+            'doc_acte_naissance.required'   => "L'acte de naissance est obligatoire.",
+            'doc_piece_identite.required'   => "La pièce d'identité est obligatoire.",
+            'doc_photo_identite.required'   => "La photo d'identité est obligatoire.",
+            'conditions.accepted'           => 'Vous devez accepter les conditions.',
         ]);
 
-        // ── 2. TOUT DANS UNE TRANSACTION ──────────────────────
+        Log::info('[INSCRIPTION] Validation OK');
+
         try {
             DB::beginTransaction();
 
-            // ── a) Compte User ─────────────────────────────────
-            // Si l'email existe déjà → on lie au compte existant
-            // Sinon → on crée un nouveau compte avec mdp auto
-            $user = User::where('email', $request->parent_email)->first();
+            // ── A) Récupérer ou créer User + ParentModel ──────────
+            if ($estConnecte) {
+                // Parent déjà connecté → on réutilise son profil
+                $user   = Auth::user();
+                $parent = $user->parentModel;
+                Log::info('[INSCRIPTION] Parent connecté réutilisé : user_id=' . $user->id);
 
-            if (!$user) {
-                // Générer mot de passe aléatoire 10 caractères
-                $motDePasse = Str::random(10);
+            } else {
+                // Non connecté → créer le compte
+                $user = User::where('email', $request->parent_email)->first();
 
-                $user = User::create([
-                    'name'     => $request->parent_prenom . ' ' . strtoupper($request->parent_nom),
-                    'email'    => $request->parent_email,
-                    'password' => Hash::make($motDePasse),
-                    'role'     => 'parent',
-                    'actif'    => true,
-                ]);
+                if (!$user) {
+                    $motDePasse = Str::random(10);
+                    $user = User::create([
+                        'name'     => $request->parent_prenom . ' ' . strtoupper($request->parent_nom),
+                        'email'    => $request->parent_email,
+                        'password' => Hash::make($motDePasse),
+                        'role'     => 'parent',
+                        'actif'    => true,
+                    ]);
+                    session(['mdp_genere' => $motDePasse]);
 
-                // TODO Sprint 5 : envoyer le mot de passe par email
-                // Mail::to($user->email)->send(new CompteCreeMail($user, $motDePasse));
+                    Log::info('[INSCRIPTION] ==============================');
+                    Log::info('[INSCRIPTION] EMAIL      : ' . $request->parent_email);
+                    Log::info('[INSCRIPTION] MOT PASSE  : ' . $motDePasse);
+                    Log::info('[INSCRIPTION] ==============================');
+                }
 
-                // Pour l'instant : stocker en session pour affichage
-                session(['mdp_genere' => $motDePasse]);
-                Log::info('[INSCRIPTION] ==============================');
-                Log::info('[INSCRIPTION] EMAIL      : ' . $request->parent_email);
-                Log::info('[INSCRIPTION] MOT PASSE  : ' . $motDePasse);
-                Log::info('[INSCRIPTION] ==============================');
+                $parent = ParentModel::firstOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'civilite'             => $request->civilite,
+                        'nom'                  => strtoupper($request->parent_nom),
+                        'prenom'               => $request->parent_prenom,
+                        'lien_parente'         => $request->lien_parente,
+                        'telephone'            => $request->parent_telephone,
+                        'telephone_secondaire' => $request->parent_telephone2,
+                        'adresse'              => $request->parent_adresse,
+                        'ville'                => $request->parent_ville,
+                        'arrondissement'       => $request->parent_arrondissement,
+                        'code_postal'          => $request->parent_code_postal,
+                    ]
+                );
+                Log::info('[INSCRIPTION] ParentModel créé/récupéré : id=' . $parent->id);
             }
 
-            // ── b) Profil ParentModel ──────────────────────────
-            // Un seul profil parent par user_id
-            $parent = ParentModel::firstOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'civilite'              => $request->civilite,
-                    'nom'                   => strtoupper($request->parent_nom),
-                    'prenom'                => $request->parent_prenom,
-                    'lien_parente'          => $request->lien_parente,
-                    'telephone'             => $request->parent_telephone,
-                    'telephone_secondaire'  => $request->parent_telephone2,
-                    'adresse'               => $request->parent_adresse,
-                    'ville'                 => $request->parent_ville,
-                    'arrondissement'        => $request->parent_arrondissement,
-                    'code_postal'           => $request->parent_code_postal,
-                ]
-            );
-
-            // ── c) Photo de l'élève ────────────────────────────
+            // ── B) Photo élève ────────────────────────────────────
             $photoPath = null;
             if ($request->hasFile('eleve_photo')) {
                 $photoPath = $request->file('eleve_photo')
                     ->store('photos/eleves', 'public');
             }
 
-            // ── d) Eleve ───────────────────────────────────────
+            // ── C) Élève ──────────────────────────────────────────
             $eleve = Eleve::create([
                 'parent_id'             => $parent->id,
                 'nom'                   => strtoupper($request->eleve_nom),
@@ -207,18 +235,19 @@ class InscriptionController extends Controller
                 'groupe_sanguin'        => $request->groupe_sanguin,
                 'infos_medicales'       => $request->infos_medicales,
             ]);
+            Log::info('[INSCRIPTION] Élève créé : id=' . $eleve->id);
 
-            // ── e) Inscription ─────────────────────────────────
+            // ── D) Inscription ────────────────────────────────────
             $inscription = Inscription::create([
-                'eleve_id'      => $eleve->id,
-                'classe_id'     => null, // affectée plus tard par l'admin
+                'eleve_id'       => $eleve->id,
+                'classe_id'      => null,
                 'annee_scolaire' => config('app.annee_scolaire', '2025-2026'),
-                'type'          => 'nouvelle',
-                'statut'        => 'en_attente',
-                // numero_dossier généré automatiquement dans le booted() du model
+                'type'           => 'nouvelle',
+                'statut'         => 'en_attente',
             ]);
+            Log::info('[INSCRIPTION] Inscription créée : ' . $inscription->numero_dossier);
 
-            // ── f) Documents uploadés ──────────────────────────
+            // ── E) Documents ──────────────────────────────────────
             $docs = [
                 'doc_acte_naissance'  => 'acte_naissance',
                 'doc_bulletin'        => 'bulletin',
@@ -226,12 +255,10 @@ class InscriptionController extends Controller
                 'doc_piece_identite'  => 'piece_identite_parent',
                 'doc_photo_identite'  => 'photo_identite',
             ];
-
             foreach ($docs as $champ => $type) {
                 if ($request->hasFile($champ)) {
-                    $fichier   = $request->file($champ);
-                    $chemin    = $fichier->store('documents/inscriptions/' . $inscription->id, 'public');
-
+                    $fichier = $request->file($champ);
+                    $chemin  = $fichier->store('documents/inscriptions/' . $inscription->id, 'public');
                     Document::create([
                         'inscription_id' => $inscription->id,
                         'type'           => $type,
@@ -245,20 +272,32 @@ class InscriptionController extends Controller
             }
 
             DB::commit();
+            Log::info('[INSCRIPTION] Transaction OK');
 
-            // ── g) Connexion automatique du parent ─────────────
-            if (!Auth::check()) {
+            // ── F) Connexion automatique si non connecté ──────────
+            if (!$estConnecte) {
                 Auth::login($user);
+                Log::info('[INSCRIPTION] Connexion auto : user_id=' . $user->id);
             }
 
-            // ── h) Redirection avec succès ─────────────────────
-            return redirect()->route('login');
+            // ── G) Redirection ────────────────────────────────────
+            $mdpInfo = !$estConnecte && session('mdp_genere')
+                ? 'Votre compte a été créé. Mot de passe : ' . session('mdp_genere')
+                : null;
+
+            return redirect()
+                ->route('parent.dashboard')
+                ->with('success', 'Dossier #' . $inscription->numero_dossier . ' soumis avec succès !')
+                ->with('mdp_info', $mdpInfo);
+
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('[INSCRIPTION] ERREUR : ' . $e->getMessage());
+            Log::error('[INSCRIPTION] Trace : ' . $e->getTraceAsString());
 
             return back()
                 ->withInput()
-                ->with('error', 'Une erreur est survenue lors de la soumission. Veuillez réessayer. (' . $e->getMessage() . ')');
+                ->with('error', 'Erreur lors de la soumission : ' . $e->getMessage());
         }
     }
 
@@ -266,7 +305,44 @@ class InscriptionController extends Controller
     // GET /parent/inscription/{id}
     // Voir le détail d'un dossier
     // ──────────────────────────────────────────────────────────
-    public function show(int $id)
+  
+
+      public function show(int $eleveId)
+    {
+        $parent = Auth::user()->parentModel;
+
+        $eleve = Eleve::with([
+                'inscriptions' => fn($q) => $q
+                    ->with(['classe', 'documents'])
+                    ->orderByDesc('annee_scolaire'),
+            ])
+            ->where('parent_id', $parent->id)
+            ->findOrFail($eleveId);
+
+        $inscriptions  = $eleve->inscriptions;
+        $derniereAnnee = $inscriptions->max('annee_scolaire');
+
+        // Calcul année suivante
+        $anneeSuivante = null;
+        $dejaReinscrit = false;
+
+        if ($derniereAnnee) {
+            $p             = explode('-', $derniereAnnee);
+            $anneeSuivante = $p[1] . '-' . ($p[1] + 1);
+            $dejaReinscrit = $inscriptions
+                ->where('annee_scolaire', $anneeSuivante)
+                ->whereIn('statut', ['en_attente', 'validee'])
+                ->isNotEmpty();
+        }
+
+        return view('parent.show', compact(
+            'eleve', 'inscriptions',
+            'derniereAnnee', 'anneeSuivante', 'dejaReinscrit'
+        ));
+    }
+
+
+      public function showUerInfo(int $id)
     {
         $parent = Auth::user()->parentModel;
 
@@ -283,6 +359,6 @@ class InscriptionController extends Controller
             // TODO Sprint 4 : return $this->genererCarte($inscription);
         }
 
-        return view('parent.inscription.show', compact('inscription'));
+        return view('parent.eleve_dossier', compact('inscription'));
     }
 }
