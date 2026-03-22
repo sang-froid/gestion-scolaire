@@ -18,6 +18,7 @@ Route::get('/login',  [AuthController::class, 'showForm'])->name('login');
 Route::post('/login', [AuthController::class, 'authenticate'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+Route::get('/test-mail', [App\Http\Controllers\MailTestController::class, 'test']);
 
 Route::get('/inscription',       [InscriptionController::class, 'showRegister'])->name('parent.inscription.create');
 Route::post('/inscription',      [InscriptionController::class, 'store'])->name('parent.inscription.store');

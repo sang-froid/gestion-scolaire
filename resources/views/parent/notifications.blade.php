@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Mes notifications — EduGest')
+@section('title', 'Mes notifications - Gestion Scolaire')
 @section('page_title', 'Notifications')
 @section('page_subtitle', $nonLues . ' non lue(s) sur ' . $total . ' au total')
 

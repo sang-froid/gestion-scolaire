@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dossier #' . $inscription->numero_dossier . ' — EduGest')
+@section('title', 'Dossier #' . $inscription->numero_dossier . ' — Gestion Scolaire')
 @section('page_title', 'Dossier d\'inscription')
 @section('page_subtitle', 'N° ' . $inscription->numero_dossier)
 

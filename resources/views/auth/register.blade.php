@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Inscription — EduGest')
+@section('title', 'Inscription — Gestion Scolaire')
 
 @section('content')
 <div class="container-fluid p-0">

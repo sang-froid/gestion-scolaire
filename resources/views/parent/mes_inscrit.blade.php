@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Mes inscrits — EduGest')
+@section('title', 'Mes inscrits — Gestion Scolaire')
 @section('page_title', 'Mes inscrits')
 @section('page_subtitle', $eleves->count() . ' enfant(s) enregistré(s)')
 

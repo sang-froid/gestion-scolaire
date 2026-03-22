@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Mon Espace — EduGest')
+@section('title', 'Mon Espace')
 @section('page_title', 'Tableau de bord')
 
 @push('styles')
