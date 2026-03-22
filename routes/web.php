@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\ClasseController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EleveController;
+use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Parent\InscriptionController;
@@ -24,6 +28,56 @@ Route::get('/inscription',       [InscriptionController::class, 'showRegister'])
 Route::post('/inscription',      [InscriptionController::class, 'store'])->name('parent.inscription.store');
 
 
+
+// ESPACE ADMIN
+// ══════════════════════════════════════════════════════════
+Route::prefix('admin')
+    ->name('admin.')
+    ->middleware(['auth', 'isAdmin'])
+    ->group(function () {
+
+        // ── Dashboard ──────────────────────────────────────
+        Route::get('/dashboard', [DashboardController::class, 'index'])
+            ->name('dashboard');
+
+        // ── Inscriptions ───────────────────────────────────
+        // Liste + filtres
+        Route::get('/inscriptions', [DashboardController::class, 'index'])
+            ->name('inscriptions.index');
+
+        // Voir le détail d'un dossier
+        Route::get('/inscriptions/{id}', [DashboardController::class, 'show'])
+            ->name('inscriptions.show');
+
+        // Valider un dossier
+        Route::post('/inscriptions/{id}/valider', [DashboardController::class, 'valider'])
+            ->name('inscriptions.valider');
+
+        // Refuser un dossier
+        Route::post('/inscriptions/{id}/refuser', [DashboardController::class, 'refuser'])
+            ->name('inscriptions.refuser');
+
+        // Affecter un élève à une classe
+        Route::post('/inscriptions/{id}/affecter', [DashboardController::class, 'affecter'])
+            ->name('inscriptions.affecter');
+
+        // ── Classes ────────────────────────────────────────
+        Route::get('/classes',            [ClasseController::class, 'index'])->name('classes.index');
+        Route::get('/classes/create',     [ClasseController::class, 'create'])->name('classes.create');
+        Route::post('/classes',           [ClasseController::class, 'store'])->name('classes.store');
+        Route::get('/classes/{id}',       [ClasseController::class, 'show'])->name('classes.show');
+        Route::get('/classes/{id}/edit',  [ClasseController::class, 'edit'])->name('classes.edit');
+        Route::put('/classes/{id}',       [ClasseController::class, 'update'])->name('classes.update');
+        Route::delete('/classes/{id}',    [ClasseController::class, 'destroy'])->name('classes.destroy');
+
+        // ── Élèves ─────────────────────────────────────────
+        Route::get('/eleves',       [EleveController::class, 'index'])->name('eleves.index');
+        Route::get('/eleves/{id}',  [EleveController::class, 'show'])->name('eleves.show');
+
+        // ── Notifications ──────────────────────────────────
+        Route::get('/notifications',  [AdminNotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications', [AdminNotificationController::class, 'send'])->name('notifications.send');
+    });
 Route::prefix('parent')
     ->name('parent.')
     ->middleware(['auth', 'isParent'])
