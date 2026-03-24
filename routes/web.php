@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Parent\InscriptionController;
 use App\Http\Controllers\Parent\ReInscriptionController;
+use App\Http\Controllers\Parent\CarteController;
 use Illuminate\Support\Facades\Route;
 
 // Redirection par défaut vers login
@@ -95,6 +96,16 @@ Route::prefix('parent')
         // Voir le détail d'un dossier (après soumission)
         Route::get('/inscription/{id}', [InscriptionController::class, 'showUerInfo'])
             ->name('inscription.show');
+
+        //Carte des élèves
+        Route::get('/cartes', [CarteController::class, 'index'])
+            ->name('cartes.index');
+
+        Route::get('/cartes/{eleve}', [CarteController::class, 'show'])
+            ->name('cartes.show');
+
+        Route::get('/cartes/{eleve}/pdf', [CarteController::class, 'download'])
+            ->name('cartes.pdf');
 
         // Notifications
 

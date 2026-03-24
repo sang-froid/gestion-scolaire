@@ -76,6 +76,7 @@
                 <i class="bi bi-credit-card-2-front"></i>
                 Cartes de scolarité
             </a>
+            
 
             {{-- ────────────────────────────────
          MENU PARENT
@@ -93,6 +94,12 @@
                 class="nav-item {{ request()->routeIs('parent.inscriptions.list') ? 'active' : '' }}">
                 <i class="bi bi-card-list"></i>
                 Mes inscriptions
+            </a>
+
+            <a href="{{ route('parent.cartes.index') }}"
+            class="nav-item {{ request()->routeIs('parent.cartes.*') ? 'active' : '' }}">
+                <i class="bi bi-credit-card-2-front"></i>
+                Cartes scolaires
             </a>
 
             {{-- Un lien par enfant inscrit --}}
