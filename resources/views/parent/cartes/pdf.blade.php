@@ -1,218 +1,178 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
     <meta charset="utf-8">
     <style>
-        /* Configuration de la page PDF */
-        @page {
-            margin: 0;
-            size: 85.6mm 54mm; /* Taille standard carte de crédit */
-        }
-
+        /* Configuration de la page : Format Carte ID standard */
+        @page { margin: 0; size: 86mm 54mm; }
+        
         body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f1f5f9;
+            margin: 0; padding: 0;
+            font-family: 'Helvetica', sans-serif;
+            background-color: #fff;
         }
 
-        .page-break {
-            page-break-after: always;
-        }
+        .page-break { page-break-after: always; }
 
-        /* ─── CARTE COMMUNE ─── */
-        .sc-card {
-            width: 85.6mm;
+        /* Conteneur principal fixe */
+        .card-container {
+            width: 86mm;
             height: 54mm;
-            position: relative;
             overflow: hidden;
+            position: relative;
         }
 
         /* ─── RECTO ─── */
-        .sc-recto {
-            background-color: #ffffff;
-        }
-
-        .sc-recto-strip {
-            background: #0D1B2A;
+        .header-strip {
+            background-color: #0D1B2A;
             height: 14mm;
-            color: #ffffff;
-            padding: 0 4mm;
             width: 100%;
         }
 
-        .sc-school-name {
-            font-size: 10px;
-            font-weight: bold;
-            margin-top: 3mm;
-            display: inline-block;
-        }
-
-        .sc-school-year {
-            font-size: 8px;
-            color: #cbd5e1;
-        }
-
-        .sc-body {
-            padding: 3mm 4mm;
-        }
-
-        /* Simulation de Flexbox avec des tables pour le PDF */
-        .table-layout {
+        .header-table {
             width: 100%;
+            padding: 2mm 4mm;
             border-collapse: collapse;
         }
 
-        .photo-cell {
-            width: 22mm;
-            vertical-align: top;
+        .school-logo { width: 10mm; height: 10mm; background: rgba(255,255,255,0.1); border-radius: 2mm; text-align: center; }
+        .school-name { font-size: 9px; font-weight: bold; color: #ffffff; line-height: 1.1; }
+        .school-year { font-size: 7px; color: rgba(255,255,255,0.6); }
+        .badge-eleve {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            font-size: 6px;
+            padding: 1mm 2.5mm;
+            border-radius: 10mm;
+            text-transform: uppercase;
         }
 
-        .sc-photo-wrap {
-            width: 20mm;
-            height: 24mm;
-            border: 1px solid #E2E8F0;
-            border-radius: 2mm;
+        .body-table {
+            width: 100%;
+            padding: 3mm 4mm;
+            border-collapse: collapse;
+        }
+
+        .photo-box {
+            width: 21mm;
+            height: 25mm;
+            border: 1pt solid #E2E8F0;
+            border-radius: 3mm;
             background: #F1F5F9;
         }
 
-        .info-cell {
-            vertical-align: top;
-            padding-left: 3mm;
-        }
-
-        .sc-name {
+        .info-cell { padding-left: 4mm; vertical-align: top; }
+        .student-name {
             font-size: 11px;
-            color: #0D1B2A;
             font-weight: bold;
+            color: #0D1B2A;
             margin-bottom: 2mm;
             text-transform: uppercase;
         }
 
-        .sc-row {
-            font-size: 8px;
-            margin-bottom: 1mm;
-        }
+        .detail-row { font-size: 8px; margin-bottom: 1mm; }
+        .label { color: #94A3B8; width: 15mm; display: inline-block; }
+        .value { color: #1E293B; font-weight: bold; }
 
-        .sc-row-label {
-            color: #94A3B8;
-            width: 15mm;
-            display: inline-block;
-        }
-
-        .sc-row-val {
-            color: #1E293B;
-            font-weight: bold;
-        }
-
-        .sc-footer {
+        .footer-line {
             position: absolute;
             bottom: 0;
             width: 100%;
-            border-top: 1px dashed #E2E8F0;
-            padding: 2mm 4mm;
-            font-size: 7px;
-            color: #94A3B8;
+            height: 8mm;
+            border-top: 0.5pt dashed #E2E8F0;
+            padding: 2mm 4mm 0;
         }
 
         /* ─── VERSO ─── */
-        .sc-verso {
-            background: #0D1B2A;
+        .verso-bg {
+            background-color: #0D1B2A;
             color: #ffffff;
+            width: 100%;
+            height: 100%;
             text-align: center;
         }
 
-        .verso-content {
-            padding-top: 8mm;
-        }
-
-        .sc-verso-logo {
-            width: 12mm;
-            height: 12mm;
-            margin: 0 auto 3mm;
-        }
-
-        .sc-verso-school {
-            font-weight: bold;
-            font-size: 11px;
-            margin-bottom: 1mm;
-        }
-
-        .sc-verso-tagline {
-            font-size: 8px;
-            opacity: 0.7;
-            margin-bottom: 3mm;
-        }
-
-        .sc-verso-contact {
-            font-size: 7px;
-            line-height: 1.5;
-            color: #cbd5e1;
-        }
+        .verso-content { padding-top: 10mm; }
+        .verso-divider { width: 15mm; height: 1pt; background: rgba(255,255,255,0.2); margin: 3mm auto; }
     </style>
 </head>
 <body>
 
-    <div class="sc-card sc-recto">
-        <div class="sc-recto-strip">
-            <span class="sc-school-name">{{ config('app.nom_ecole', 'Nom de l\'école') }}</span><br>
-            <span class="sc-school-year"> Année accadémique : {{ $eleve->inscription?->annee_scolaire ?? '2025-2026' }}</span>
-        </div>
-
-        <div class="sc-body">
-            <table class="table-layout">
+    <div class="card-container">
+        <div class="header-strip">
+            <table class="header-table">
                 <tr>
-                    <td class="photo-cell">
-                        <div class="sc-photo-wrap">
-                            @if($eleve->photo)
-                                <img src="{{ public_path('storage/'.$eleve->photo) }}" style="width:100%; height:100%; object-fit: cover;">
+                    <td style="width: 12mm;">
+                        <div class="school-logo">
+                            @if(config('app.logo_ecole'))
+                                <img src="{{ public_path(config('app.logo_ecole')) }}" style="width: 100%; height: 100%; border-radius: 1.5mm;">
                             @endif
                         </div>
                     </td>
-                    <td class="info-cell">
-                        <div class="sc-name">{{ $eleve->nom }} {{ $eleve->prenom }}</div>
-                        
-                        <div class="sc-row">
-                            <span class="sc-row-label">Matricule:</span>
-                            <span class="sc-row-val">{{ $eleve->matricule ?? '—' }}</span>
-                        </div>
-                        <div class="sc-row">
-                            <span class="sc-row-label">Classe:</span>
-                            <span class="sc-row-val">{{ $eleve->inscription?->classe?->nom ?? '—' }}</span>
-                        </div>
-                        <div class="sc-row">
-                            <span class="sc-row-label">Né(e) le:</span>
-                            <span class="sc-row-val">{{ $eleve->date_naissance?->format('d/m/Y') ?? '—' }}</span>
-                        </div>
-                        <div class="sc-row">
-                            <span class="sc-row-label">Parent:</span>
-                            <span class="sc-row-val">{{ $eleve->parent->nom ?? '—' }}</span>
-                            <span class="sc-row-val">{{ $eleve->parent->prenom ?? '—' }}</span>
-                        </div>
+                    <td>
+                        <div class="school-name">{{ config('app.nom_ecole', 'ÉCOLE') }}</div>
+                        <div class="school-year">{{ $eleve->inscription?->annee_scolaire }}</div>
+                    </td>
+                    <td style="text-align: right; vertical-align: middle;">
+                        <span class="badge-eleve">Élève</span>
                     </td>
                 </tr>
             </table>
         </div>
 
-        <div class="sc-footer">
-            Valide pour l'année scolaire {{ $eleve->inscription?->annee_scolaire ?? '—' }}
+        <table class="body-table">
+            <tr>
+                <td style="width: 21mm;">
+                    <div class="photo-box">
+                        @if($eleve->photo)
+                            <img src="{{ public_path('storage/'.$eleve->photo) }}" style="width: 100%; height: 100%; border-radius: 2.5mm;">
+                        @endif
+                    </div>
+                </td>
+                <td class="info-cell">
+                    <div class="student-name">{{ $eleve->nom }} {{ $eleve->prenom }}</div>
+                    
+                    <div class="detail-row"><span class="label">Matricule</span><span class="value">: {{ $eleve->matricule ?? '—' }}</span></div>
+                    <div class="detail-row"><span class="label">Classe</span><span class="value">: {{ $eleve->inscription?->classe?->nom ?? '—' }}</span></div>
+                    <div class="detail-row"><span class="label">Né(e) le</span><span class="value">: {{ $eleve->date_naissance?->format('d/m/Y') ?? '—' }}</span></div>
+                    <div class="detail-row"><span class="label">Sexe</span><span class="value">: {{ $eleve->sexe ?? '—' }}</span></div>
+                    
+                    <div style="font-size: 7px; color: #94A3B8; margin-top: 2mm;">
+                        Parent : <span style="color: #1E293B;">{{ $eleve->parent->nom_complet }}</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="footer-line">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="font-size: 7px; color: #94A3B8;">Valide pour l'année {{ $eleve->inscription?->annee_scolaire }}</td>
+                    <td style="text-align: right;">
+                        <span style="background: #EFF6FF; color: #1D4ED8; font-size: 6px; font-weight: bold; padding: 0.5mm 2mm; border-radius: 5mm;">OFFICIEL</span>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 
     <div class="page-break"></div>
 
-    <div class="sc-card sc-verso">
-        <div class="verso-content">
-            <div class="sc-verso-logo">
-                <img src="{{ public_path(config('app.logo_ecole','images/logo.png')) }}" style="width:100%;">
-            </div>
-            <div class="sc-verso-school">{{ config('app.nom_ecole') }}</div>
-            <div class="sc-verso-tagline">Carte officielle d'identification scolaire</div>
-            <div style="width: 20mm; height: 1px; background: rgba(255,255,255,0.2); margin: 2mm auto;"></div>
-            <div class="sc-verso-contact">
-                Adresse : {{ config('app.adresse_ecole', 'Adresse de l\'école') }}<br>
-                Tél: {{ config('app.telephone_ecole', '+229 01 99 99 99') }}<br>
-                Email: {{ config('app.email_ecole', 'contact@ecole.bj') }}
+    <div class="card-container">
+        <div class="verso-bg">
+            <div class="verso-content">
+                @if(config('app.logo_ecole'))
+                    <img src="{{ public_path(config('app.logo_ecole')) }}" style="width: 12mm; margin-bottom: 2mm;">
+                @endif
+                <div style="font-size: 11px; font-weight: bold; letter-spacing: 1px;">{{ config('app.nom_ecole') }}</div>
+                <div class="verso-divider"></div>
+                <div style="font-size: 7px; opacity: 0.7;">Carte officielle d'identification scolaire</div>
+                
+                <div style="margin-top: 6mm; font-size: 7px; line-height: 1.5; color: #cbd5e1;">
+                    {{ config('app.adresse_ecole', 'Adresse de l\'école') }}<br>
+            {{ config('app.tel_ecole', '+XXX XX XX XX XX') }}<br>
+            {{ config('app.email_ecole', 'contact@ecole.bj') }}
+                </div>
             </div>
         </div>
     </div>
