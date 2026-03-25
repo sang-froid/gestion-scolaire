@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ClasseController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EleveController;
+use App\Http\Controllers\Admin\InscriptionController as AdminInscriptionController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NotificationController;
@@ -42,23 +43,23 @@ Route::prefix('admin')
 
         // ── Inscriptions ───────────────────────────────────
         // Liste + filtres
-        Route::get('/inscriptions', [DashboardController::class, 'index'])
+        Route::get('/inscriptions', [AdminInscriptionController::class, 'index'])
             ->name('inscriptions.index');
 
         // Voir le détail d'un dossier
-        Route::get('/inscriptions/{id}', [DashboardController::class, 'show'])
+        Route::get('/inscriptions/{id}', [AdminInscriptionController::class, 'show'])
             ->name('inscriptions.show');
 
         // Valider un dossier
-        Route::post('/inscriptions/{id}/valider', [DashboardController::class, 'valider'])
+        Route::post('/inscriptions/{id}/valider', [AdminInscriptionController::class, 'valider'])
             ->name('inscriptions.valider');
 
         // Refuser un dossier
-        Route::post('/inscriptions/{id}/refuser', [DashboardController::class, 'refuser'])
+        Route::post('/inscriptions/{id}/refuser', [AdminInscriptionController::class, 'refuser'])
             ->name('inscriptions.refuser');
 
         // Affecter un élève à une classe
-        Route::post('/inscriptions/{id}/affecter', [DashboardController::class, 'affecter'])
+        Route::post('/inscriptions/{id}/affecter', [AdminInscriptionController::class, 'affecter'])
             ->name('inscriptions.affecter');
 
         // ── Classes ────────────────────────────────────────
