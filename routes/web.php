@@ -11,11 +11,16 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Parent\InscriptionController;
 use App\Http\Controllers\Parent\ReInscriptionController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Parent\ProfilController;
+
 
 // Redirection par défaut vers login
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
+
+
 
 //Auth::routes();
 
@@ -23,6 +28,15 @@ Route::get('/', function () {
 Route::get('/login',  [AuthController::class, 'showForm'])->name('login');
 Route::post('/login', [AuthController::class, 'authenticate'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+
+// Mot de passe oublié Bel
+Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])->name('password.request');
+Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+
+///////
 
 Route::get('/test-mail', [App\Http\Controllers\MailTestController::class, 'test']);
 
@@ -121,4 +135,10 @@ Route::prefix('parent')
 
         Route::get('/notifications', [NotificationController::class, 'index'])
             ->name('notifications.index');
+
+
+        Route::get('/profil',                    [ProfilController::class, 'index'])->name('profil');
+        Route::put('/profil/infos',              [ProfilController::class, 'updateInfos'])->name('profil.infos');
+        Route::put('/profil/email',              [ProfilController::class, 'updateEmail'])->name('profil.email');
+        Route::put('/profil/password',           [ProfilController::class, 'updatePassword'])->name('profil.password');
     });

@@ -1,4 +1,3 @@
-
 <div class="topbar">
 
   {{-- ── GAUCHE : Titre de la page + bouton menu mobile ── --}}
@@ -22,87 +21,97 @@
   {{-- ── DROITE : Actions ── --}}
   <div class="d-flex align-items-center gap-2">
 
-    {{-- Cloche notifications --}}
-    @if(auth()->user()->role === 'admin')
-      @php $nb_notif = \App\Models\Inscription::where('statut','en_attente')->count(); @endphp
-      <a href="{{ route('admin.notifications.index') }}" class="topbar-icon">
-        <i class="bi bi-bell"></i>
-        @if($nb_notif > 0)
-          <span class="notif-dot"></span>
-        @endif
-      </a>
-    @else
-      @php
-        $nb_notif = auth()->user()->parentModel
-          ?->notifications()->whereNull('lu_le')->count() ?? 0;
-      @endphp
-      <a href="{{ route('parent.notifications.index') }}" class="topbar-icon">
-        <i class="bi bi-bell"></i>
-        @if($nb_notif > 0)
-          <span class="notif-dot"></span>
-        @endif
-      </a>
-    @endif
+    @auth
+      {{-- Cloche notifications --}}
+      @if(auth()->user()->role === 'admin')
+        @php $nb_notif = \App\Models\Inscription::where('statut','en_attente')->count(); @endphp
+        <a href="{{ route('admin.notifications.index') }}" class="topbar-icon">
+          <i class="bi bi-bell"></i>
+          @if($nb_notif > 0)
+            <span class="notif-dot"></span>
+          @endif
+        </a>
+      @else
+        @php
+          $nb_notif = auth()->user()->parentModel
+            ?->notifications()->whereNull('lu_le')->count() ?? 0;
+        @endphp
+        <a href="{{ route('parent.notifications.index') }}" class="topbar-icon">
+          <i class="bi bi-bell"></i>
+          @if($nb_notif > 0)
+            <span class="notif-dot"></span>
+          @endif
+        </a>
+      @endif
 
-    {{-- Séparateur visuel --}}
-    <div style="width:1px;height:24px;background:var(--border)"></div>
+      {{-- Séparateur visuel --}}
+      <div style="width:1px;height:24px;background:var(--border)"></div>
 
-    {{-- ── Dropdown utilisateur ── --}}
-    <div class="dropdown">
-      <button class="btn-avatar dropdown-toggle border-0"
-              data-bs-toggle="dropdown"
-              aria-expanded="false">
-        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
-      </button>
+      {{-- ── Dropdown utilisateur ── --}}
+      <div class="dropdown">
+        <button class="btn-avatar dropdown-toggle border-0"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+          {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+        </button>
 
-      <ul class="dropdown-menu dropdown-menu-end border-0 rounded-3"
-          style="min-width:220px;box-shadow:0 8px 30px rgba(13,27,42,.12);padding:.5rem">
+        <ul class="dropdown-menu dropdown-menu-end border-0 rounded-3"
+            style="min-width:220px;box-shadow:0 8px 30px rgba(13,27,42,.12);padding:.5rem">
 
-        {{-- Infos utilisateur --}}
-        <li class="px-3 py-2">
-          <div style="font-weight:700;font-size:.9rem;color:var(--navy)">
-            {{ auth()->user()->name }}
-          </div>
-          <div style="font-size:.78rem;color:var(--slate)">
-            {{ auth()->user()->email }}
-          </div>
-          <div style="margin-top:.3rem">
-            <span class="badge-gu badge-info" style="font-size:.7rem">
-              {{ auth()->user()->role === 'admin' ? 'Administrateur' : 'Parent' }}
-            </span>
-          </div>
-        </li>
+          {{-- Infos utilisateur --}}
+          <li class="px-3 py-2">
+            <div style="font-weight:700;font-size:.9rem;color:var(--navy)">
+              {{ auth()->user()->name }}
+            </div>
+            <div style="font-size:.78rem;color:var(--slate)">
+              {{ auth()->user()->email }}
+            </div>
+            <div style="margin-top:.3rem">
+              <span class="badge-gu badge-info" style="font-size:.7rem">
+                {{ auth()->user()->role === 'admin' ? 'Administrateur' : 'Parent' }}
+              </span>
+            </div>
 
-        <li><hr class="dropdown-divider my-1" style="border-color:var(--border)"></li>
+            
+            @if(auth()->user()->role === 'parent')
+                <div style="margin-top:.3rem">
+                    <a href="{{ route('parent.profil') }}" 
+                      class="badge-gu badge-info" 
+                      style="font-size:.7rem">
+                        <i class="bi bi-person-gear"></i> Mon profil
+                    </a>
+                </div>
+            @endif
+            
+            
+          </li>
 
-        {{-- Lien profil (optionnel) --}}
-        {{--
-        <li>
-          <a class="dropdown-item rounded-2 d-flex align-items-center gap-2"
-             href="#" style="font-size:.88rem">
-            <i class="bi bi-person-circle"></i> Mon profil
-          </a>
-        </li>
-        --}}
+          <li><hr class="dropdown-divider my-1" style="border-color:var(--border)"></li>
 
-        {{-- Déconnexion --}}
-        <li>
-          <form action="{{ route('logout') }}" method="POST">
-            @csrf
-            <button type="submit"
-                    class="dropdown-item rounded-2 d-flex align-items-center gap-2 text-danger"
-                    style="font-size:.88rem">
-              <i class="bi bi-box-arrow-right"></i> Déconnexion
-            </button>
-          </form>
-        </li>
+          {{-- Déconnexion --}}
+          <li>
+            <form action="{{ route('logout') }}" method="POST">
+              @csrf
+              <button type="submit"
+                      class="dropdown-item rounded-2 d-flex align-items-center gap-2 text-danger"
+                      style="font-size:.88rem">
+                <i class="bi bi-box-arrow-right"></i> Déconnexion
+              </button>
+            </form>
+          </li>
 
-      </ul>
-    </div>
-    {{-- /dropdown --}}
+        </ul>
+      </div>
+      {{-- /dropdown --}}
+
+      
+    @endauth
 
   </div>
   {{-- /droite --}}
+
+  
+  
 
 </div>
 {{-- /topbar --}}
