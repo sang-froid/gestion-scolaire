@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\InscriptionController as AdminInscriptionControll
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Parent\FicheController as ParentFicheController;
 use App\Http\Controllers\Parent\InscriptionController;
 use App\Http\Controllers\Parent\ReInscriptionController;
 use Illuminate\Support\Facades\Route;
@@ -141,4 +142,8 @@ Route::prefix('parent')
         Route::put('/profil/infos',              [ProfilController::class, 'updateInfos'])->name('profil.infos');
         Route::put('/profil/email',              [ProfilController::class, 'updateEmail'])->name('profil.email');
         Route::put('/profil/password',           [ProfilController::class, 'updatePassword'])->name('profil.password');
-    });
+    
+        Route::get('/inscription/{id}/fiche',  [ParentFicheController::class, 'fiche']) ->name('inscription.fiche');
+        Route::get('/inscription/{id}/carte',  [ParentFicheController::class, 'carte']) ->name('inscription.carte');
+    
+        });

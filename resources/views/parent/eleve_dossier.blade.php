@@ -314,12 +314,17 @@
       </div>
       <div class="actions-bar">
         @if($inscription->statut === 'validee')
-          <a href="?dl=fiche" class="btn-primary-gu" style="font-size:.83rem;padding:.48rem 1rem">
-            <i class="bi bi-file-earmark-pdf"></i> Fiche PDF
-          </a>
-          <a href="?dl=carte" class="btn-outline-gu" style="font-size:.83rem;padding:.48rem 1rem">
-            <i class="bi bi-credit-card-2-front"></i> Carte
-          </a>
+          <a href="{{ route('parent.inscription.fiche', $eleve->inscription->id) }}"
+       class="btn-outline-gu" style="padding:.42rem .9rem;font-size:.8rem">
+      <i class="bi bi-download"></i> Fiche PDF
+    </a>
+
+    {{-- Carte (seulement si classe affectée) --}}
+    @if($eleve->inscription->classe_id)
+      <a href="{{ route('parent.inscription.carte', $eleve->inscription->id) }}"
+         class="btn-outline-gu" style="padding:.42rem .9rem;font-size:.8rem">
+        <i class="bi bi-credit-card-2-front"></i> Carte
+      </a>
         @else
           <span style="font-size:.81rem;color:#64748B">
             <i class="bi bi-info-circle me-1"></i>
