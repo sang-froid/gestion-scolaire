@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ClasseController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EleveController;
+use App\Http\Controllers\Admin\FicheController;
 use App\Http\Controllers\Admin\InscriptionController as AdminInscriptionController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\AuthController;
@@ -78,7 +79,14 @@ Route::prefix('admin')
         // ── Notifications ──────────────────────────────────
         Route::get('/notifications',  [AdminNotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications', [AdminNotificationController::class, 'send'])->name('notifications.send');
-    });
+
+        Route::get('/fiches',                   [FicheController::class, 'index'])      ->name('fiches.index');
+        Route::get('/fiches/{id}/fiche',        [FicheController::class, 'fiche'])      ->name('fiches.fiche');
+        Route::get('/fiches/{id}/carte',        [FicheController::class, 'carte'])      ->name('fiches.carte');
+        Route::get('/fiches/classe/{classeId}', [FicheController::class, 'ficheClasse'])->name('fiches.classe');
+
+});
+
 Route::prefix('parent')
     ->name('parent.')
     ->middleware(['auth', 'isParent'])

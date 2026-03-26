@@ -65,17 +65,13 @@
 
             <p class="nav-section-label">Documents</p>
 
-            <a href="{{ route('admin.eleves.index') }}?action=fiches"
+            <a href="{{ route('admin.fiches.index') }}?action=fiches"
                 class="nav-item {{ request()->is('admin/eleves*') && request()->get('action') === 'fiches' ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-text"></i>
                 Fiches d'inscription
             </a>
 
-            <a href="{{ route('admin.eleves.index') }}?action=cartes"
-                class="nav-item {{ request()->is('admin/eleves*') && request()->get('action') === 'cartes' ? 'active' : '' }}">
-                <i class="bi bi-credit-card-2-front"></i>
-                Cartes de scolarité
-            </a>
+         
 
             {{-- ────────────────────────────────
          MENU PARENT
