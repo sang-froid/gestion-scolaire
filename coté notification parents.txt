@@ -1,0 +1,11 @@
+coté notification parents 
+réinitialisation pasword
+page profil parent
+
+-admin
+page inscription
+gestion des classes
+fiches d'inscription
+carte de scolarité
+
+notification et alerte

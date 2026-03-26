@@ -7,6 +7,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Str;
+
 class AuthController extends Controller
 {
     //
@@ -115,4 +121,71 @@ class AuthController extends Controller
             default  => redirect('/'),
         };
     }
+
+
+    // ── GET /forgot-password ──────────────────────────────────
+    public function showForgotForm()
+    {
+        return view('auth.passwords.email');
+    }
+
+    // ── POST /forgot-password ─────────────────────────────────
+    public function sendResetLink(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+        ], [
+            'email.required' => "L'adresse e-mail est obligatoire.",
+            'email.email'    => "L'adresse e-mail n'est pas valide.",
+        ]);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        return $status === Password::RESET_LINK_SENT
+            ? back()->with('status', 'Un lien de réinitialisation a été envoyé à votre adresse e-mail.')
+            : back()->withErrors(['email' => "Aucun compte trouvé avec cette adresse e-mail."]);
+    }
+
+    // ── GET /reset-password/{token} ───────────────────────────
+    public function showResetForm(Request $request, string $token)
+    {
+        return view('auth.passwords.reset', [
+            'token' => $token,
+            'email' => $request->email,
+        ]);
+    }
+
+        // ── POST /reset-password ──────────────────────────────────
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token'                 => ['required'],
+            'email'                 => ['required', 'email'],
+            'password'              => ['required', 'min:8', 'confirmed'],
+        ], [
+            'password.required'  => 'Le mot de passe est obligatoire.',
+            'password.min'       => 'Le mot de passe doit contenir au moins 8 caractères.',
+            'password.confirmed' => 'Les mots de passe ne correspondent pas.',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? redirect()->route('login')->with('success', 'Mot de passe réinitialisé avec succès !')
+            : back()->withErrors(['email' => __($status)]);
+    }
+
 }

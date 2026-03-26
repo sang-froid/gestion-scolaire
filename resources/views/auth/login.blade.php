@@ -93,11 +93,23 @@
             @enderror
           </div>
 
-          <div class="d-flex justify-content-between align-items-center mb-4">
+          <!-- <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="form-check">
               <input type="checkbox" class="form-check-input" id="remember" name="remember"/>
               <label class="form-check-label small" for="remember">Se souvenir</label>
             </div>
+          </div> -->
+
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="remember" name="remember"/>
+                <label class="form-check-label small" for="remember">Se souvenir</label>
+            </div>
+            <a href="{{ route('password.request') }}"
+              class="text-decoration-none small fw-semibold"
+              style="color:#1e4d8c">
+                Mot de passe oublié ?
+            </a>
           </div>
 
           {{-- ══ BOUTON AVEC LOADER CSS ══
