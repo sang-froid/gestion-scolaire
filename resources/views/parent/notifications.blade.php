@@ -242,9 +242,9 @@
               @if($notif->type === 'paiement') tag-pay
               @elseif($notif->type === 'urgente') tag-alert
               @else tag-info @endif">
-              @if($notif->type === 'paiement') 💰 Paiement
-              @elseif($notif->type === 'urgente') 🚨 Urgent
-              @else ℹ️ Info @endif
+              @if($notif->type === 'paiement') Paiement
+              @elseif($notif->type === 'urgente')  Urgent
+              @else  Info @endif
             </span>
             {{-- Tag élève concerné --}}
             @if($notif->eleve)
